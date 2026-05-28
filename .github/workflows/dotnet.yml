@@ -5,8 +5,12 @@ on:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  build:
+  build-test-format:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,13 +20,22 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: '8.0.x'
 
       - name: Restore Dependencies
         run: dotnet restore
 
       - name: Build Project
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore --configuration Release
 
       - name: Run Tests
         run: dotnet test --no-build --verbosity normal
+
+      - name: Install CSharpier
+        run: dotnet tool install -g csharpier
+
+      - name: Add .NET Tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Check Code Formatting
+        run: csharpier check .
