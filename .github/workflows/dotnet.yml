@@ -1,16 +1,12 @@
-name: .NET Web API CI/CD
+name: .NET Docker CI/CD
 
 on:
   push:
     branches:
       - main
 
-  pull_request:
-    branches:
-      - main
-
 jobs:
-  build-test-format:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,20 +18,34 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore Dependencies
+      - name: Restore
         run: dotnet restore
 
-      - name: Build Project
+      - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run Tests
-        run: dotnet test --no-build --verbosity normal
+      - name: Test
+        run: dotnet test --no-build
 
       - name: Install CSharpier
         run: dotnet tool install -g csharpier
 
-      - name: Add .NET Tools to PATH
+      - name: Add Tool Path
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Check Code Formatting
+      - name: Check Formatting
         run: csharpier check .
+
+      - name: Build Docker Image
+        run: docker build -t cicd-webapi .
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Deploy Step
+        run: echo "Deploying application..."
