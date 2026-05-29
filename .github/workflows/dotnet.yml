@@ -18,14 +18,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
+      - name: Restore Dependencies
         run: dotnet restore
 
-      - name: Build
+      - name: Build Project
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build
+      - name: Run Tests
+        run: dotnet test --no-build --verbosity normal
 
       - name: Install CSharpier
         run: dotnet tool install -g csharpier
@@ -47,5 +47,20 @@ jobs:
       name: production
 
     steps:
-      - name: Deploy Step
-        run: echo "Deploying application..."
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t cicd-webapi .
+
+      - name: Tag Docker Image
+        run: docker tag cicd-webapi ${{ secrets.DOCKER_USERNAME }}/cicd-webapi:latest
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/cicd-webapi:latest
