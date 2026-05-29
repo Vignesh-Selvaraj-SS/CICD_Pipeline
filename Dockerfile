@@ -3,8 +3,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
 
-# Copy all files
+# Copy everything
 COPY . .
+
+# Move into project folder
+WORKDIR "/src/CICD Pipeline"
 
 # Restore dependencies
 RUN dotnet restore
@@ -17,11 +20,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 WORKDIR /app
 
-# Copy published output
+# Copy published files
 COPY --from=build /app/publish .
 
-# Expose container port
 EXPOSE 80
 
-# Start application
 ENTRYPOINT ["dotnet", "CICD Pipeline.dll"]
